@@ -44,8 +44,8 @@ A comprehensive, production-ready implementation of Meta's Segment Anything Mode
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/SAM_3D.git
-cd SAM_3D
+git clone https://github.com/aaliyanahmed1/SAM_3D_.git
+cd SAM_3D_
 
 # Create virtual environment
 python -m venv venv
@@ -56,6 +56,9 @@ pip install -r requirements.txt
 
 # Install the package
 pip install -e .
+
+# Optional: Install advanced 3D features
+pip install -r requirements-optional.txt
 ```
 
 ### Docker Installation
@@ -286,8 +289,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Contact
 
-- Project Link: [https://github.com/yourusername/SAM_3D](https://github.com/yourusername/SAM_3D)
-- Issues: [https://github.com/yourusername/SAM_3D/issues](https://github.com/yourusername/SAM_3D/issues)
+- Project Link: [https://github.com/aaliyanahmed1/SAM_3D_](https://github.com/aaliyanahmed1/SAM_3D_)
+- Issues: [https://github.com/aaliyanahmed1/SAM_3D_/issues](https://github.com/aaliyanahmed1/SAM_3D_/issues)
 
 ## 🗺️ Roadmap
 

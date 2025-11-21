@@ -222,6 +222,20 @@ config.model.precision = 'fp16'
 
 ## Optional Dependencies
 
+### For Advanced 3D Features (PyTorch3D)
+
+PyTorch3D requires special installation:
+
+```bash
+# Option 1: From source (recommended)
+pip install "git+https://github.com/facebookresearch/pytorch3d.git"
+
+# Option 2: Using conda
+conda install pytorch3d -c pytorch3d
+
+# Note: PyTorch3D is optional and only needed for advanced 3D reconstruction
+```
+
 ### For 3D Visualization
 
 ```bash
@@ -238,6 +252,12 @@ pip install moviepy ffmpeg-python
 
 ```bash
 pip install mediapipe
+```
+
+### All Optional Dependencies
+
+```bash
+pip install -r requirements-optional.txt
 ```
 
 ### For Development
