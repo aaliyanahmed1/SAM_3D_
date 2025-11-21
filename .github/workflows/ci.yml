@@ -1,0 +1,221 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          
+      - name: Run Black
+        run: black --check --diff sam3d/ tests/ examples/
+        
+      - name: Run isort
+        run: isort --check-only --diff sam3d/ tests/ examples/
+        
+      - name: Run Flake8
+        run: flake8 sam3d/ tests/ examples/ --max-line-length=100 --ignore=E203,W503
+        
+      - name: Run MyPy
+        run: mypy sam3d/ --ignore-missing-imports
+        continue-on-error: true
+
+  test:
+    name: Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-${{ matrix.python-version }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.python-version }}-pip-
+            
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install -e .
+          
+      - name: Run unit tests
+        run: pytest tests/ -m "unit" -v --cov=sam3d --cov-report=xml --cov-report=term
+        
+      - name: Upload coverage to Codecov
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install -e .
+          
+      - name: Run integration tests
+        run: pytest tests/ -m "integration" -v --maxfail=3
+        continue-on-error: true
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety bandit
+          
+      - name: Run Safety check
+        run: safety check --json || true
+        
+      - name: Run Bandit
+        run: bandit -r sam3d/ -f json -o bandit-report.json || true
+        
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+
+  build:
+    name: Build Distribution
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build wheel twine
+          
+      - name: Build package
+        run: python -m build
+        
+      - name: Check package
+        run: twine check dist/*
+        
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-packages
+          path: dist/
+
+  docker-build:
+    name: Docker Build & Test
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: false
+          tags: sam3d:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: Test Docker image
+        run: |
+          docker run --rm sam3d:test python -c "import sam3d; print('Import successful')"
+
+  docs-build:
+    name: Documentation Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install mkdocs mkdocs-material
+          
+      - name: Build documentation
+        run: mkdocs build --strict
+        continue-on-error: true
+

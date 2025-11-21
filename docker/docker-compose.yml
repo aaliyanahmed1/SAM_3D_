@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  sam3d-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: sam3d:latest
+    container_name: sam3d-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../checkpoints:/app/checkpoints:ro
+      - ../data:/app/data:rw
+      - ../outputs:/app/outputs:rw
+      - ../logs:/app/logs:rw
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - SAM3D_MODEL_TYPE=vit_h
+      - SAM3D_DEVICE=cuda
+      - SAM3D_LOG_LEVEL=INFO
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - sam3d-network
+
+  sam3d-worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: sam3d:latest
+    container_name: sam3d-worker
+    command: python3 -m sam3d.worker
+    volumes:
+      - ../checkpoints:/app/checkpoints:ro
+      - ../data:/app/data:rw
+      - ../outputs:/app/outputs:rw
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - SAM3D_WORKER_QUEUE=default
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    networks:
+      - sam3d-network
+    depends_on:
+      - sam3d-api
+
+networks:
+  sam3d-network:
+    driver: bridge
+
