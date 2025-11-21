@@ -220,11 +220,19 @@ segmentor.loader.optimize_for_inference()
 config.model.precision = 'fp16'
 ```
 
-## Optional Dependencies
+## Optional & Development Dependencies
 
-### For Advanced 3D Features (PyTorch3D)
+All runtime, testing, documentation, and most optional dependencies are consolidated in a single `requirements.txt`. The file is organized into sections (core, development, documentation, optional extras). Install everything with:
 
-PyTorch3D requires special installation:
+```bash
+pip install -r requirements.txt
+```
+
+If you only want the core runtime, you can comment out the sections you do not need before installing.
+
+### Advanced 3D Features (PyTorch3D)
+
+PyTorch3D still requires a custom installation:
 
 ```bash
 # Option 1: From source (recommended)
@@ -232,38 +240,11 @@ pip install "git+https://github.com/facebookresearch/pytorch3d.git"
 
 # Option 2: Using conda
 conda install pytorch3d -c pytorch3d
-
-# Note: PyTorch3D is optional and only needed for advanced 3D reconstruction
 ```
 
-### For 3D Visualization
+### Pre-commit Hooks
 
 ```bash
-pip install open3d
-```
-
-### For Video Processing
-
-```bash
-pip install moviepy ffmpeg-python
-```
-
-### For Human Pose
-
-```bash
-pip install mediapipe
-```
-
-### All Optional Dependencies
-
-```bash
-pip install -r requirements-optional.txt
-```
-
-### For Development
-
-```bash
-pip install -r requirements-dev.txt
 pre-commit install
 ```
 

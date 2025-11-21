@@ -51,14 +51,11 @@ cd SAM_3D_
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# Install dependencies (runtime + dev + docs)
 pip install -r requirements.txt
 
-# Install the package
+# Install the package in editable mode
 pip install -e .
-
-# Optional: Install advanced 3D features
-pip install -r requirements-optional.txt
 ```
 
 ### Docker Installation
@@ -154,8 +151,7 @@ SAM_3D_/
 ├── docker/               # Docker configs
 │   ├── Dockerfile
 │   └── docker-compose.yml
-├── requirements.txt      # Python dependencies
-├── requirements-dev.txt  # Development dependencies
+├── requirements.txt      # All Python dependencies
 ├── setup.py             # Package setup
 ├── pytest.ini           # Pytest configuration
 ├── .gitignore
@@ -239,8 +235,8 @@ docker-compose -f docker/docker-compose.yml up
 ### Setup Development Environment
 
 ```bash
-# Install development dependencies
-pip install -r requirements-dev.txt
+# Install all dependencies (already includes dev/test/docs)
+pip install -r requirements.txt
 
 # Install pre-commit hooks
 pre-commit install

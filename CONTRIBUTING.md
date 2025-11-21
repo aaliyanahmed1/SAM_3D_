@@ -32,9 +32,8 @@ git remote add upstream https://github.com/yourusername/SAM_3D.git
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# Install dependencies (runtime + dev + docs)
 pip install -r requirements.txt
-pip install -r requirements-dev.txt
 
 # Install pre-commit hooks
 pre-commit install

@@ -119,8 +119,7 @@ SAM_3D_/
 ├── CONTRIBUTING.md            # Contributing guidelines
 ├── LICENSE                     # MIT License
 ├── setup.py                   # Package setup
-├── requirements.txt           # Dependencies
-├── requirements-dev.txt       # Dev dependencies
+├── requirements.txt           # All dependencies
 ├── pytest.ini                 # Pytest configuration
 └── .pre-commit-config.yaml   # Pre-commit hooks
 ```
